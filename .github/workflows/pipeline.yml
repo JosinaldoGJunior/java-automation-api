@@ -16,11 +16,11 @@ permissions:
   checks: write
 
 jobs:
-  build:
+  run-java-tests:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -32,37 +32,34 @@ jobs:
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
+            gradle-${{ runner.os }}-
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Set environment variables
-        run: |
-          echo "EMAIL=${{ secrets.EMAIL }}" >> $GITHUB_ENV
-          echo "PASSWORD=${{ secrets.PASSWORD }}" >> $GITHUB_ENV
-          echo "BASE_URL=${{ secrets.BASE_URL }}" >> $GITHUB_ENV
+      - name: Run tests with Allure
+        run: ./gradlew clean test allureReport
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          BASE_URL: ${{ secrets.BASE_URL }}
 
-      - name: Build with Gradle
-        run: ./gradlew clean test
-
-      - name: Generate Allure Report
-        run: ./gradlew allureReport
-
-      - name: Upload Allure Results
+      - name: Upload Allure results as artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: build/allure-results
 
-      - name: Publish Allure Report to gh-pages
-        uses: simple-elf/allure-report-action@v2
+      - name: Deploy Allure Report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          allure_results: build/allure-results
-          allure_report: build/reports/allure-report
-          allure_history: allure-history
-          gh_pages: gh-pages
-          keep_reports: 10
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: build/reports/allure-report
+          publish_branch: gh-pages
