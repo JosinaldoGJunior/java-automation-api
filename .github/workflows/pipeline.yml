@@ -1,5 +1,4 @@
 name: Java CI with Allure
-
 on:
   schedule:
     - cron: "0 21 * * *"
@@ -8,27 +7,22 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
   checks: write
-
 jobs:
   run-java-tests:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -38,15 +32,46 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             gradle-${{ runner.os }}-
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run tests with Allure
-        run: ./gradlew clean test allureReport
+      # DEBUG STEPS
+      - name: Debug - Check secrets
+        run: |
+          echo "=== ENVIRONMENT VARIABLES DEBUG ==="
+          echo "API_USER_EMAIL is set: $([[ -n "$API_USER_EMAIL" ]] && echo "YES" || echo "NO")"
+          echo "API_USER_PASSWORD is set: $([[ -n "$API_USER_PASSWORD" ]] && echo "YES" || echo "NO")"  
+          echo "BASE_URL is set: $([[ -n "$BASE_URL" ]] && echo "YES" || echo "NO")"
+          echo "BASE_URL value: $BASE_URL"
+          echo "API_USER_EMAIL length: ${#API_USER_EMAIL}"
+          echo "API_USER_PASSWORD length: ${#API_USER_PASSWORD}"
+          echo "=== END DEBUG ==="
         env:
-          EMAIL: ${{ secrets.API_USER_EMAIL }}
-          PASSWORD: ${{ secrets.API_USER_PASSWORD}}
+          API_USER_EMAIL: ${{ secrets.API_USER_EMAIL }}
+          API_USER_PASSWORD: ${{ secrets.API_USER_PASSWORD }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+
+      - name: Debug - Test connection to API
+        run: |
+          echo "Testing connection to BASE_URL..."
+          curl -I "$BASE_URL" || echo "Connection failed"
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+
+      - name: Debug - Run single test class
+        run: |
+          echo "Running only the failing test class..."
+          ./gradlew test --tests "*TransactionManagement*" --info --stacktrace
+        env:
+          API_USER_EMAIL: ${{ secrets.API_USER_EMAIL }}
+          API_USER_PASSWORD: ${{ secrets.API_USER_PASSWORD }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+
+      - name: Run tests with Allure
+        run: ./gradlew clean test allureReport --info --stacktrace
+        env:
+          API_USER_EMAIL: ${{ secrets.API_USER_EMAIL }}
+          API_USER_PASSWORD: ${{ secrets.API_USER_PASSWORD }}
           BASE_URL: ${{ secrets.BASE_URL }}
 
       - name: Upload Allure results as artifact
