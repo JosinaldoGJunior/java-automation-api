@@ -45,8 +45,8 @@ jobs:
       - name: Run tests with Allure
         run: ./gradlew clean test allureReport
         env:
-          EMAIL: ${{ secrets.EMAIL }}
-          PASSWORD: ${{ secrets.PASSWORD }}
+          EMAIL: ${{ secrets.API_USER_EMAIL }}
+          PASSWORD: ${{ secrets.API_USER_PASSWORD}}
           BASE_URL: ${{ secrets.BASE_URL }}
 
       - name: Upload Allure results as artifact
