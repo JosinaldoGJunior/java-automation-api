@@ -58,10 +58,10 @@ jobs:
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
 
-      - name: Debug - Run single test class
+      - name: Debug - Run specific failing test
         run: |
-          echo "Running only the failing test class..."
-          ./gradlew test --tests "*TransactionManagement*" --info --stacktrace
+          echo "Running TransactionTests specifically..."
+          ./gradlew test --tests "api.test.TransactionTests" --info --stacktrace
         env:
           API_USER_EMAIL: ${{ secrets.API_USER_EMAIL }}
           API_USER_PASSWORD: ${{ secrets.API_USER_PASSWORD }}
