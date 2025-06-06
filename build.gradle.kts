@@ -19,6 +19,8 @@ dependencies {
     testImplementation("org.junit.platform:junit-platform-suite:1.10.0")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation ("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 
     testImplementation("io.qameta.allure:allure-junit5:2.20.1")
     testImplementation("io.qameta.allure:allure-rest-assured:2.20.1")
@@ -30,6 +32,8 @@ tasks.test {
 
     systemProperty("junit.jupiter.extensions.autodetection.enabled", true)
 }
+
+
 
 allure {
     version.set("2.20.1")
