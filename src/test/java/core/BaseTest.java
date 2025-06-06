@@ -20,9 +20,15 @@ public class BaseTest {
 
     @BeforeEach
     public void resetBeforeEachTest() {
+        System.out.println("=== Iniciando setup do teste ===");
+
         RestAssured.baseURI = Config.getBaseUrl();
         RestAssured.port = Config.getPort();
+        System.out.println("Base URL: " + Config.getBaseUrl());
+        System.out.println("Port: " + Config.getPort());
+
         String token = getToken();
+        System.out.println("Token obtido: " + (token != null ? "OK" : "FALHOU"));
 
         RequestSpecBuilder reqBuilder = new RequestSpecBuilder();
         reqBuilder.setContentType(Config.getContentType());
@@ -36,7 +42,9 @@ public class BaseTest {
 
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
+        System.out.println("Fazendo reset...");
         RestAssured.get("/reset").then().statusCode(200);
+        System.out.println("Reset concluído com sucesso");
     }
 
     private String getToken() {
