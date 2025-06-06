@@ -15,11 +15,11 @@ import java.util.Map;
 
 import static org.hamcrest.Matchers.lessThan;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 public class BaseTest {
 
-    @BeforeAll
-    public void setup() {
+    @BeforeEach
+    public void resetBeforeEachTest() {
         RestAssured.baseURI = Config.getBaseUrl();
         RestAssured.port = Config.getPort();
         String token = getToken();
@@ -36,12 +36,6 @@ public class BaseTest {
 
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
-        RestAssured.get("/reset").then().statusCode(200);
-    }
-
-
-    @BeforeEach
-    public void resetBeforeEachTest() {
         RestAssured.get("/reset").then().statusCode(200);
     }
 
