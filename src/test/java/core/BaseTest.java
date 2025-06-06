@@ -7,6 +7,7 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.HashMap;
@@ -35,6 +36,12 @@ public class BaseTest {
 
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
+        RestAssured.get("/reset").then().statusCode(200);
+    }
+
+
+    @BeforeEach
+    public void resetBeforeEachTest() {
         RestAssured.get("/reset").then().statusCode(200);
     }
 
