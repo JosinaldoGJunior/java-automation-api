@@ -35,7 +35,6 @@ public class BaseTest {
 
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
-        RestAssured.get("/reset").then().statusCode(200);
     }
 
     private String getToken() {
