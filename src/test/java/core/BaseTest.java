@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.lessThan;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class BaseTest {
 
+    
     @BeforeAll
     public void setup() {
         RestAssured.baseURI = Config.getBaseUrl();
