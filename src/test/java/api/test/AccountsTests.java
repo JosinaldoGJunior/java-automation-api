@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.*;
 @DisplayName("Account Management Tests")
 public class AccountsTests extends BaseTest {
 
-
     @Test
     @DisplayName("Should create account successfully")
     void shouldCreateAccountSuccessfully() {
