@@ -55,12 +55,13 @@ jobs:
           unzip -o allure-2.21.0.zip -d /opt/
           sudo ln -s /opt/allure-2.21.0/bin/allure /usr/bin/allure
 
-      - name: Generate Allure Report
+      - name: Generate Allure Report Static HTML
         run: |
-          ./gradlew allureReport
+          allure generate build/allure-results -o build/allure-report --clean
 
-      - name: Publish Allure Report as artifact
-        uses: actions/upload-artifact@v4
+      - name: Deploy Allure Report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          name: allure-report
-          path: build/reports/allure-report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: build/allure-report
