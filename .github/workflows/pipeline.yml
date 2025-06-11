@@ -60,7 +60,7 @@ jobs:
           ./gradlew allureReport
 
       - name: Publish Allure Report as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-report
           path: build/reports/allure-report
