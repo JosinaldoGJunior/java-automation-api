@@ -7,7 +7,6 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.HashMap;
@@ -37,27 +36,6 @@ public class BaseTest {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
     }
-
-    @BeforeEach
-    public void resetData() {
-        // Opção 1: Se existe endpoint de reset
-        try {
-            RestAssured
-                    .given()
-                    .when()
-                    .delete("/reset")
-                    .then()
-                    .statusCode(204); // ou 200
-        } catch (Exception e) {
-            System.out.println("Endpoint /reset não disponível, usando limpeza manual");
-            cleanupDataManually();
-        }
-    }
-
-    private void cleanupDataManually() {
-        
-    }
-
 
     private String getToken() {
         Map<String, String> login = new HashMap<>();
