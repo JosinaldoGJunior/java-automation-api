@@ -1,27 +1,24 @@
+// Em core/BaseTest.java
 package core;
 
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.filter.log.LogDetail;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.TestInstance;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.hamcrest.Matchers.lessThan;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+// Remova o @TestInstance, não é mais necessário com esta abordagem
 public class BaseTest {
 
     @BeforeAll
-    public void setup() {
+    public static void setup() { // O método agora pode ser estático
         RestAssured.baseURI = Config.getBaseUrl();
         RestAssured.port = Config.getPort();
-        String token = getToken();
+
+        // Pega o token do nosso gerenciador
+        String token = TokenManager.getToken();
 
         RequestSpecBuilder reqBuilder = new RequestSpecBuilder();
         reqBuilder.setContentType(Config.getContentType());
@@ -34,23 +31,5 @@ public class BaseTest {
         RestAssured.responseSpecification = resBuilder.build();
 
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-
-    }
-
-    private String getToken() {
-        Map<String, String> login = new HashMap<>();
-        login.put("email", Config.getUserEmail());
-        login.put("senha", Config.getUserPassword());
-
-        Response response = RestAssured
-                .given()
-                .contentType(ContentType.JSON)
-                .body(login)
-                .when()
-                .post("/signin");
-
-        response.then().statusCode(200);
-
-        return response.then().extract().path("token");
     }
 }

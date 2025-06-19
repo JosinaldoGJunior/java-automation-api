@@ -11,25 +11,31 @@ repositories {
 }
 
 dependencies {
+    // Suas dependências de implementação (RestAssured, etc.)
     implementation("io.rest-assured:rest-assured:5.3.2")
     implementation("io.rest-assured:json-schema-validator:5.3.2")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("io.github.cdimascio:java-dotenv:5.2.2")
 
-    testImplementation("org.junit.platform:junit-platform-suite:1.10.0")
+    // --- Configuração Limpa do JUnit 5 ---
+    // 1. O BOM gerencia todas as versões do JUnit.
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation ("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 
+    // 2. O agregador 'junit-jupiter' já puxa a API e a Engine.
+    testImplementation("org.junit.jupiter:junit-jupiter")
+
+    // --- Dependências do Allure ---
     testImplementation("io.qameta.allure:allure-junit5:2.20.1")
     testImplementation("io.qameta.allure:allure-rest-assured:2.20.1")
+
+    // --- Opcional ---
+    // A dependência abaixo só é necessária se você usar a anotação @Suite para criar suítes de teste.
+    // Se não estiver usando, pode remover também para uma limpeza máxima.
+    testImplementation("org.junit.platform:junit-platform-suite")
 }
 
 tasks.test {
     useJUnitPlatform()
-    maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
-
     systemProperty("junit.jupiter.extensions.autodetection.enabled", true)
 }
 

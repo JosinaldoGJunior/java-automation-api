@@ -13,7 +13,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 @DisplayName("Account Management Tests")
-public class RegressionTests extends BaseTest {
+public class AccountTests extends BaseTest {
 
     @Test
     @DisplayName("Should create account successfully")

@@ -8,68 +8,56 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class Config {
-    private static final Properties props = new Properties();
-    private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
+    private static final Properties properties = new Properties();
+    private static final Dotenv dotenv = Dotenv.configure()
+            .ignoreIfMissing()
+            .systemProperties()
+            .load();
+
+    // Carrega as propriedades do arquivo config.properties, se ele existir.
     static {
         try (InputStream input = Config.class.getResourceAsStream("/config.properties")) {
             if (input != null) {
-                props.load(input);
+                properties.load(input);
             }
         } catch (IOException e) {
-            System.err.println("Failed to load config.properties: " + e.getMessage());
-        }
-
-        if (!props.containsKey("base.url")) {
-            props.setProperty("base.url", "https://barrigarest.wcaquino.me");
-        }
-        if (!props.containsKey("port")) {
-            props.setProperty("port", "443");
-        }
-        if (!props.containsKey("base.path")) {
-            props.setProperty("base.path", "/");
-        }
-        if (!props.containsKey("content.type")) {
-            props.setProperty("content.type", "JSON");
-        }
-        if (!props.containsKey("max.timeout")) {
-            props.setProperty("max.timeout", "5000");
-        }
-        if (!props.containsKey("user.email")) {
-            String email = dotenv.get("API_USER_EMAIL", System.getenv("API_USER_EMAIL") != null ? System.getenv("API_USER_EMAIL") : "default.email@example.com");
-            props.setProperty("user.email", email);
-        }
-        if (!props.containsKey("user.password")) {
-            String password = dotenv.get("API_USER_PASSWORD", System.getenv("API_USER_PASSWORD") != null ? System.getenv("API_USER_PASSWORD") : "defaultpassword");
-            props.setProperty("user.password", password);
+            System.err.println("Não foi possível carregar o config.properties, usando valores padrão. Erro: " + e.getMessage());
         }
     }
 
+    // Cada método getter agora define sua própria hierarquia de forma explícita.
+    // Hierarquia: Variável de Ambiente/ .env > config.properties > Valor Padrão no Código
+
     public static String getBaseUrl() {
-        return props.getProperty("base.url");
+        return dotenv.get("BASE_URL", properties.getProperty("base.url", "https://barrigarest.wcaquino.me"));
     }
 
     public static int getPort() {
-        return Integer.parseInt(props.getProperty("port"));
+        return Integer.parseInt(dotenv.get("PORT", properties.getProperty("port", "443")));
     }
 
     public static String getBasePath() {
-        return props.getProperty("base.path");
+        return dotenv.get("BASE_PATH", properties.getProperty("base.path", "/"));
     }
 
     public static ContentType getContentType() {
-        return ContentType.valueOf(props.getProperty("content.type").toUpperCase());
+        return ContentType.valueOf(dotenv.get("CONTENT_TYPE", properties.getProperty("content.type", "JSON")).toUpperCase());
     }
 
     public static long getMaxTimeout() {
-        return Long.parseLong(props.getProperty("max.timeout"));
+        return Long.parseLong(dotenv.get("MAX_TIMEOUT", properties.getProperty("max.timeout", "5000")));
     }
 
+    // --- MÉTODOS CORRIGIDOS E EXPLÍCITOS PARA CREDENCIAIS ---
+
     public static String getUserEmail() {
-        return props.getProperty("user.email");
+        // Procura pela variável 'API_USER_EMAIL' no ambiente/.env, depois 'user.email' no arquivo, e por último usa o default.
+        return dotenv.get("API_USER_EMAIL", properties.getProperty("user.email", "default.email@example.com"));
     }
 
     public static String getUserPassword() {
-        return props.getProperty("user.password");
+        // Procura pela variável 'API_USER_PASSWORD' no ambiente/.env, depois 'user.password' no arquivo, e por último usa o default.
+        return dotenv.get("API_USER_PASSWORD", properties.getProperty("user.password", "defaultpassword"));
     }
 }
