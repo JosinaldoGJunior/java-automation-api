@@ -1,6 +1,8 @@
 // Em core/BaseTest.java
 package core;
 
+import clients.AccountsClient;
+import clients.TransactionsClient;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
@@ -11,6 +13,9 @@ import static org.hamcrest.Matchers.lessThan;
 
 // Remova o @TestInstance, não é mais necessário com esta abordagem
 public class BaseTest {
+
+    protected static AccountsClient accountsClient;
+    protected static TransactionsClient transactionsClient;
 
     @BeforeAll
     public static void setup() { // O método agora pode ser estático
@@ -31,5 +36,8 @@ public class BaseTest {
         RestAssured.responseSpecification = resBuilder.build();
 
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+
+        accountsClient = new AccountsClient();
+        transactionsClient = new TransactionsClient();
     }
 }

@@ -1,12 +1,13 @@
 package api.test;
 
 import core.BaseTest;
+import io.restassured.response.Response;
 import models.AccountPayload;
 import models.TransactionPayload;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import utils.Helpers;
 import utils.PayloadGenerator;
+import utils.TestDataSetup;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
@@ -15,28 +16,33 @@ import static org.hamcrest.Matchers.*;
 public class TransactionTests extends BaseTest {
 
     @Test
-    @DisplayName("Should insert transaction successfully")
+    @DisplayName("Should create transaction successfully")
     public void shouldInsertTransactionSuccessfully() {
-        AccountPayload accountPayload = PayloadGenerator.generateAccountPayload();
-        Integer accountId = Helpers.createAccountAndGetId(accountPayload);
 
-        TransactionPayload transactionPayload = PayloadGenerator.generateTransactionPayload(accountId);
+        // Arrange - All data and preconditions are set up here.
+        Integer accountId = TestDataSetup.createValidAccountAndGetId();
+        TransactionPayload payload = PayloadGenerator.generateNewExpensePayload(accountId);
 
-        given()
-                .body(transactionPayload)
-                .when()
-                .post("/transacoes")
-                .then()
-                .statusCode(201);
+        // Action - Creating transaction
+        Response createTransaction = transactionsClient.createTransaction(payload);
+
+        // Assert - The response is validated.
+        createTransaction.then()
+                .statusCode(201)
+                .body("id", notNullValue())
+                .body("descricao", is(payload.getDescricao()))
+                .body("envolvido",is(payload.getEnvolvido()));
+
     }
 
     @Test
     @DisplayName("Should validate mandatory fields for transaction")
-    public void shouldValidateMandatoryFieldsForTransaction() {
-        given()
-                .when()
-                .post("/transacoes")
-                .then()
+    void shouldValidateMandatoryFieldsForTransaction() {
+        // Act
+        Response attemptResponse = transactionsClient.createTransactionWithEmptyBody();
+
+        // Assert
+        attemptResponse.then()
                 .statusCode(400)
                 .body("$", hasSize(8))
                 .body("msg", hasItems(
@@ -51,56 +57,53 @@ public class TransactionTests extends BaseTest {
                 ));
     }
 
+
     @Test
-    @DisplayName("Should not insert transaction with future date")
-    public void shouldNotInsertTransactionWithFutureDate() {
-        AccountPayload accountPayload = PayloadGenerator.generateAccountPayload();
-        Integer accountId = Helpers.createAccountAndGetId(accountPayload);
+    @DisplayName("Should not create a transaction with a future date")
+    void shouldNotCreateTransactionWithFutureDate() {
+        // Arrange - An account is created and a payload with a future date is prepared.
+        Integer accountId = TestDataSetup.createValidAccountAndGetId();
+        TransactionPayload payload = PayloadGenerator.generateFutureDateExpensePayload(accountId);
 
-        TransactionPayload transactionPayload = PayloadGenerator.generateFutureTransactionPayload(accountId);
+        // Act - Attempt to create the transaction.
+        Response response = transactionsClient.createTransaction(payload);
 
-        given()
-                .body(transactionPayload)
-                .when()
-                .post("/transacoes")
-                .then()
+        // Assert - Validate the business rule violation.
+        response.then()
                 .statusCode(400)
                 .body("$", hasSize(1))
                 .body("msg", hasItem("Data da Movimentação deve ser menor ou igual à data atual"));
     }
 
     @Test
-    @DisplayName("Should not delete account with transactions")
-    public void shouldNotDeleteAccountWithTransactions() {
-        AccountPayload accountPayload = PayloadGenerator.generateAccountPayload();
-        Integer accountId = Helpers.createAccountAndGetId(accountPayload);
+    @DisplayName("Should not delete an account that has transactions")
+    void shouldNotDeleteAccountWithTransactions() {
+        // Arrange - Create an account and then create a transaction linked to that account.
+        Integer accountId = TestDataSetup.createValidAccountAndGetId();
+        TestDataSetup.createValidIncomeAndGetId(accountId);
 
-        TransactionPayload transactionPayload = PayloadGenerator.generateTransactionPayload(accountId);
-        Helpers.createTransactionAndGetId(transactionPayload);
+        // Act - Attempt to delete the parent account.
+        Response deleteAttemptResponse = accountsClient.deleteAccount(accountId);
 
-        given()
-                .pathParam("id", accountId)
-                .when()
-                .delete("/contas/{id}")
-                .then()
+        // Assert - Validate that the API returns a specific server error due to a database constraint.
+        deleteAttemptResponse.then()
                 .statusCode(500)
                 .body("constraint", is("transacoes_conta_id_foreign"));
     }
 
     @Test
-    @DisplayName("Should delete transaction")
-    public void shouldDeleteTransaction() {
-        AccountPayload accountPayload = PayloadGenerator.generateAccountPayload();
-        Integer accountId = Helpers.createAccountAndGetId(accountPayload);
+    @DisplayName("Should delete transaction successfully")
+    void shouldDeleteTransactionSuccessfully() {
 
-        TransactionPayload transactionPayload = PayloadGenerator.generateTransactionPayload(accountId);
-        Integer transactionId = Helpers.createTransactionAndGetId(transactionPayload);
+        // Arrange - An account with a transaction in it.
+        Integer accountId = TestDataSetup.createValidAccountAndGetId();
+        Integer transactionId = TestDataSetup.createValidIncomeAndGetId(accountId);
 
-        given()
-                .pathParam("id", transactionId)
-                .when()
-                .delete("/transacoes/{id}")
-                .then()
+        // Act - The action is to delete the specific transaction we just created.
+        Response deleteResponse = transactionsClient.deleteTransaction(transactionId);
+
+        // Assert - We validate that the deletion was successful.
+        deleteResponse.then()
                 .statusCode(204);
     }
 }
