@@ -17,7 +17,6 @@ public class TestDataSetup {
      * @return The ID (Integer) of the created account.
      */
     public static Integer createValidAccountAndGetId() {
-        // Creates its own payload internally
         AccountPayload payload = PayloadGenerator.generateAccountPayload();
         return createValidAccountAndGetId(payload);
     }
@@ -31,7 +30,7 @@ public class TestDataSetup {
     public static Integer createValidAccountAndGetId(AccountPayload payload) {
         return accountsClient.createAccount(payload)
                 .then()
-                .statusCode(201) // Asserts that the setup was successful
+                .statusCode(201)
                 .extract().path("id");
     }
 
@@ -44,9 +43,7 @@ public class TestDataSetup {
      * @return The ID of the created income transaction.
      */
     public static Integer createValidIncomeAndGetId(Integer accountId) {
-        // Uses the specific generator for an INCOME payload
         TransactionPayload payload = PayloadGenerator.generateNewIncomePayload(accountId);
-        // Calls the base method to perform the API call and extraction
         return createValidTransactionAndGetId(payload);
     }
 
@@ -57,9 +54,7 @@ public class TestDataSetup {
      * @return The ID of the created expense transaction.
      */
     public static Integer createValidExpenseAndGetId(Integer accountId) {
-        // Uses the specific generator for an EXPENSE payload
         TransactionPayload payload = PayloadGenerator.generateNewExpensePayload(accountId);
-        // Calls the base method to perform the API call and extraction
         return createValidTransactionAndGetId(payload);
     }
 

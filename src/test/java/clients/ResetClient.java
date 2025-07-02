@@ -7,6 +7,7 @@ import static io.restassured.RestAssured.given;
 /**
  * API Client for interacting with the /reset endpoint.
  */
+
 public class ResetClient extends BaseTest {
 
     /**

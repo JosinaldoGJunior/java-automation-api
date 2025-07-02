@@ -6,6 +6,9 @@ import io.restassured.response.Response;
 import models.TransactionPayload;
 import static io.restassured.RestAssured.given;
 
+/**
+ * API Client for interacting with the /transacoes resource.
+ */
 
 public class TransactionsClient extends BaseTest {
 
